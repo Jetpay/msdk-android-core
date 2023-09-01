@@ -1,0 +1,78 @@
+package kz.jetpay.msdk.core.android.aps
+
+import android.graphics.Bitmap
+import android.net.http.SslError
+import android.os.Bundle
+import android.view.View.GONE
+import android.webkit.SslErrorHandler
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import com.paymentpage.msdk.core.domain.entities.payment.Payment
+import com.paymentpage.msdk.core.domain.interactors.pay.aps.ApsSaleRequest
+import kz.jetpay.msdk.core.android.App
+import kz.jetpay.msdk.core.android.PayBaseActivity
+import kz.jetpay.msdk.core.android.R
+
+class ApsActivity : PayBaseActivity() {
+
+    lateinit var webView: WebView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_aps)
+
+        val apsMethod = App.getMsdkSession().getPaymentMethods()
+            ?.lastOrNull { it.code == "alipay" }
+        val paymentUrl = apsMethod?.paymentUrl
+
+        webView = findViewById(R.id.webView)
+
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                if (url != paymentUrl && apsMethod != null) {
+                    interactor.execute(
+                        ApsSaleRequest(apsMethod.code),
+                        this@ApsActivity
+                    )
+                }
+            }
+
+            override fun onPageFinished(view: WebView, url: String) {
+                super.onPageFinished(view, url)
+                // some code
+            }
+
+            override fun onReceivedSslError(
+                view: WebView,
+                handler: SslErrorHandler, error: SslError
+            ) {
+                //  some code
+            }
+        }
+
+        webView.settings.javaScriptEnabled = true
+        webView.settings.builtInZoomControls = true
+        webView.settings.domStorageEnabled = true
+
+        if (!paymentUrl.isNullOrEmpty()) {
+            webView.loadUrl(paymentUrl)
+        }
+    }
+
+    override fun onCompleteWithDecline(
+        isTryAgain: Boolean,
+        paymentMessage: String?,
+        payment: Payment
+    ) {
+        super.onCompleteWithDecline(isTryAgain, paymentMessage, payment)
+        webView.visibility = GONE
+    }
+
+
+    override fun onCompleteWithSuccess(payment: Payment) {
+        super.onCompleteWithSuccess(payment)
+        webView.visibility = GONE
+
+    }
+}
