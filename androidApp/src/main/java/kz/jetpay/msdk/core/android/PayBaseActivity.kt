@@ -145,4 +145,8 @@ abstract class PayBaseActivity : AppCompatActivity(), PayDelegate {
         progressDialog.dismiss()
         Toast.makeText(applicationContext, code.exceptionName ?: message, Toast.LENGTH_LONG).show()
     }
+
+    override fun onThreeDSecureRedirectComplete(){
+
+    }
 }
