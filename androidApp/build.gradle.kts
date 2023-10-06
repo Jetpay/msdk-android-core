@@ -39,7 +39,7 @@ android {
 }
 
 dependencies {
-    implementation("kz.jetpay:msdk-core-android:1.0.0")
+    implementation("kz.jetpay:msdk-core-android:1.0.1")
 
     implementation("androidx.startup:startup-runtime:1.1.1")
 
